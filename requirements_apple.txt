@@ -1,0 +1,19 @@
+-r requirements-dev.txt
+
+# Libraries
+scikit-learn
+scipy
+scikit-image
+numpy==1.26.4
+matplotlib
+pandas
+opencv-python
+gym==0.17.*
+pygame
+
+tensorflow==2.14.*
+tensorflow-macos==2.14.*
+keras==2.14.*
+tensorflow-datasets>=4.9.*
+tensorflow-addons>=0.22.*
+tensorcross>=1.0.*
