@@ -9,6 +9,7 @@ class Car:
         self.year = year
 
     def get_info(self) -> str:
+        # Using f-string for formatting
         return (
             f"Name: {self.name} OEM: {self.oem} HP: {self.hp} Year: {self.year}"
         )

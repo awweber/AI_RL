@@ -8,19 +8,20 @@ print(l1)
 l2 = l1[0:20:2]
 print(l2)
 
-# 0:Stop:1
+# 0:Stop:10
 l3 = l1[:10]
 print(l3)
 
 my_array = np.zeros(shape=(2, 2), dtype=np.int32)
-print(my_array)
+print("my_array: ", my_array)
 
 my_reshaped_array = np.reshape(my_array, newshape=(4,))
-print(my_reshaped_array)
+print("my_reshaped_array: ", my_reshaped_array)
 
-#                    [0, 10]
+# randint                  [0, 10]
 my_random_array = np.random.randint(low=0, high=11, size=20)
-print(my_random_array)
-
+print("my_random_arraym: ", my_random_array)
+# random uniform (float64) [0.0, 10.0)
 my_random_array2 = np.random.uniform(low=0.0, high=10.0, size=20)
-print(my_random_array2)
+print("my_random_array2: ", my_random_array2)
+print("dtype: ", my_random_array2.dtype)
