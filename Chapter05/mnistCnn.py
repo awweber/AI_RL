@@ -6,7 +6,7 @@ from keras.layers import MaxPooling2D
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-from mnistData2 import MNIST
+from mnistDataCNN import MNIST
 
 
 def build_model() -> Sequential:
