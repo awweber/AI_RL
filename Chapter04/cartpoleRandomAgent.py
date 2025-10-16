@@ -1,6 +1,6 @@
 from typing import Any
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 
@@ -21,7 +21,7 @@ class Agent:
                 if render:
                     self.env.render()
                 action = self.get_action()
-                _, reward, done, _ = self.env.step(action)
+                _, reward, done, _, _ = self.env.step(action)
                 total_reward += reward
                 if done:
                     break

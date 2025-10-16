@@ -1,6 +1,6 @@
 from typing import Any
-
-import gym
+import ale_py
+import gymnasium as gym
 import numpy as np
 
 
@@ -12,19 +12,19 @@ class Agent:
         return self.env.action_space.sample()
 
     def play(self, episodes: int, render: bool = True) -> list:
-        rewards = [0.0 for i in range(episodes)]
+        rewards = [0.0 for _ in range(episodes)]
 
         for episode in range(episodes):
-            state = self.env.reset()
+            obs, info = self.env.reset()
             total_reward = 0.0
 
             while True:
                 if render:
                     self.env.render()
                 action = self.get_action()
-                state, reward, done, _ = self.env.step(action)  # noqa: F841
+                obs, reward, terminated, truncated, info = self.env.step(action)
                 total_reward += reward
-                if done:
+                if terminated or truncated:
                     rewards[episode] = total_reward
                     break
 
@@ -35,14 +35,14 @@ def main() -> None:
     games = [
         "CartPole-v1",
         "MountainCar-v0",
-        "PongNoFrameskip-v4",
-        "Breakout-v0",
+        "ALE/Pong-v5",
+        "ALE/Breakout-v5",
     ]
 
     for game in games:
-        env = gym.make(game)
+        env = gym.make(game, render_mode="human")
         agent = Agent(env)
-        rewards = agent.play(episodes=100, render=True)
+        rewards = agent.play(episodes=5, render=True)
 
         rewards_mean = np.mean(rewards)
         rewards_min = np.min(rewards)

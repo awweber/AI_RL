@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 
 
 def main() -> None:
@@ -21,9 +21,13 @@ def main() -> None:
     print(f"obs_space_high: {obs_space_high}")
     print(f"obs_space_shape: {obs_space_shape}")
 
+    sum = 0
     for _ in range(10):
         act_sampled = env.action_space.sample()
         print(f"act_sampled: {act_sampled}")
+        sum += act_sampled
+    print(f"act_sampled average: {sum / 10}")
+    env.close()
 
 
 if __name__ == "__main__":

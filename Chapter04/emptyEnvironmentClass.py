@@ -1,8 +1,8 @@
-from typing import Any
+from typing import Any 
 
-import gym
+import gymnasium as gym
 import numpy as np
-from gym import spaces
+from gymnasium import spaces
 
 
 class CustomEnv(gym.Env):  # type: ignore
@@ -76,12 +76,16 @@ def main() -> None:
     print("Observation Space High: ", obs_space_high)
     print("Observation Space Shape: ", obs_space_shape)
 
+    total_reward = 0.0
     while True:
         act_sample = env.action_space.sample()
         print("Sample: ", act_sample)
-        _, _, done, _ = env.step(act_sample)
+        _, reward, done, _ = env.step(act_sample)
+        total_reward += reward
         env.render()
+        
         if done:
+            print(f"Total Reward: {total_reward}")
             break
 
 

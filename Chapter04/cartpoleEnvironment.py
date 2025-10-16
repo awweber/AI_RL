@@ -1,21 +1,20 @@
-import gym
+import gymnasium as gym
 
 
 def main() -> None:
+    env = gym.make("CartPole-v1", render_mode="human")
     episodes = 100
 
-    env = gym.make("CartPole-v1")
-
     for episode in range(episodes):
-        env.reset()
+        env.reset() # reset the environment at the start of each episode
         total_reward = 0.0
 
         while True:
-            env.render()
+            # env.render()
             action = env.action_space.sample()
-            _, reward, done, _ = env.step(action)
+            obs, reward, terminated, truncated, info = env.step(action)
             total_reward += reward
-            if done:
+            if terminated or truncated:
                 break
 
         print(f"Episode: {episode} Total Reward: {total_reward}")
