@@ -3,7 +3,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-from mnistData1 import MNIST
+from mnistData import MNIST
 
 
 def build_model() -> Sequential:
@@ -38,9 +38,9 @@ def main() -> None:
         optimizer=Adam(learning_rate=0.001),
         metrics=["accuracy"],
     )
-
+    print("Training...")
     model.fit(x=x_train, y=y_train, epochs=10, batch_size=128)
-
+    print("Evaluating...")
     score = model.evaluate(x=x_test, y=y_test, batch_size=128)
     print(f"Test accuracy: {score[1]}")
 

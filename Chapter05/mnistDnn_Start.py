@@ -1,4 +1,4 @@
-from mnistData1 import MNIST
+from mnistData import MNIST
 
 
 def main() -> None:

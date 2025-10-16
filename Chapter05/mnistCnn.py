@@ -46,11 +46,12 @@ def main() -> None:
         optimizer=Adam(learning_rate=0.0001),
         metrics=["accuracy"],
     )
-
-    model.fit(x=x_train, y=y_train, epochs=30, batch_size=128)
-
+    print("Training model...")
+    model.fit(x=x_train, y=y_train, epochs=10, batch_size=128)
+    print("Model trained!")
+    print
     score = model.evaluate(x=x_test, y=y_test, batch_size=128)
-    print(f"Test accuracy: {score[1]}")
+    print(f"Test accuracy: {score[1]:.2f}")
 
 
 if __name__ == "__main__":

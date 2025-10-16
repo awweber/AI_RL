@@ -3,7 +3,7 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-from mnistData1 import MNIST
+from mnistData import MNIST
 
 
 def build_model() -> Sequential:

@@ -3,20 +3,17 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adam
 
-from mnistData1 import MNIST
+from mnistData import MNIST
 
 
 def build_model() -> Sequential:
     model = Sequential()
     # (Input Layer and) Hidden Layer 1
-    model.add(Dense(units=512, input_shape=(784,)))
-    model.add(Activation("relu"))
+    model.add(Dense(units=512, activation="relu", input_shape=(784,)))
     # Hidden Layer 2
-    model.add(Dense(units=512))
-    model.add(Activation("relu"))
+    model.add(Dense(units=512, activation="relu"))
     # Output Layer
-    model.add(Dense(units=10))
-    model.add(Activation("softmax"))
+    model.add(Dense(units=10, activation="softmax"))
     return model
 
 
@@ -35,11 +32,11 @@ def main() -> None:
         optimizer=Adam(learning_rate=0.001),
         metrics=["accuracy"],
     )
-
+    print("Training...")
     model.fit(x=x_train, y=y_train, epochs=10, batch_size=128)
-
+    print("Evaluating...")
     score = model.evaluate(x=x_test, y=y_test, batch_size=128)
-    print(f"Test accuracy: {score[0]}")
+    print(f"Test accuracy: {score[1]*100:.2f}%")
 
 
 if __name__ == "__main__":
