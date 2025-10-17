@@ -1,6 +1,6 @@
 from typing import Any
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt  # noqa: F401, RUF100
 import numpy as np
 from keras.layers import Activation

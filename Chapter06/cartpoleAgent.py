@@ -1,14 +1,14 @@
 # type: ignore
 from typing import Any
 
-import gym
-import matplotlib.pyplot as plt  # noqa: F401, RUF100
+import gymnasium as gym
+import matplotlib.pyplot as plt  
 import numpy as np
-from keras.layers import Activation  # noqa: F401, RUF100
-from keras.layers import Dense  # noqa: F401, RUF100
+
 from keras.models import Sequential
-from keras.optimizers import Adam  # noqa: F401, RUF100
-from keras.utils import to_categorical  # noqa: F401, RUF100
+from keras.layers import Activation, Dense  
+from keras.optimizers import Adam  
+from keras.utils import to_categorical  
 
 
 class Agent:
@@ -25,21 +25,11 @@ class Agent:
 
     def get_samples(self, num_episodes: int) -> tuple[list[float], list[float]]:
         pass
-
-    def filter_episodes(
-        self,
-        rewards: list[float],
-        episodes: list[tuple[float, float]],
-        percentile: float,
-    ) -> tuple[np.ndarray, np.ndarray, float]:
+    
+    def filter_episodes(self, rewards: list[float], episodes: list[tuple[float, float]], percentile: float) -> tuple[np.ndarray, np.ndarray, float]:
         pass
 
-    def train(
-        self,
-        percentile: float,
-        num_iterations: int,
-        num_episodes: int,
-    ) -> tuple[list[float], list[float]]:
+    def train(self, percentile: float, num_iterations: int, num_episodes: int) -> tuple[list[float], list[float]]:
         pass
 
     def play(self, episodes: int, render: bool = True) -> None:
@@ -51,7 +41,7 @@ class Agent:
                 if render:
                     self.env.render()
                 action = self.get_action()
-                _, reward, done, _ = self.env.step(action)
+                _, reward, done, _, _ = self.env.step(action)
                 total_reward += reward
                 if done:
                     break
