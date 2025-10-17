@@ -1,9 +1,9 @@
 from typing import Any
+from typing import Tuple  # noqa: F401
 
-import gym  # noqa: F401
 import numpy as np
 
-from environment import GOAL  # noqa: F401
+from environment import GOAL
 from environment import Env
 from environment import GraphicDisplay
 
@@ -25,16 +25,56 @@ class Agent:
         self.v_values = np.zeros(shape=(self.rows, self.cols))
 
     def get_value(self, state: tuple[int, int]) -> Any:
-        pass
+        return self.v_values[state[0]][state[1]]
 
     def get_action(self, state: tuple[int, int]) -> Any:
-        pass
+        if state == GOAL:
+            return None
+        policy_in_state = self.policy[state[0]][state[1]]
+        return np.random.choice(self.A, p=policy_in_state)
 
     def policy_evaluation(self) -> None:
-        pass
+        next_v_values = np.zeros(shape=(self.rows, self.cols))
+        # Update V values for each state
+        for state in self.S:
+            value = 0.0
+            if tuple(state) == GOAL:
+                continue
+
+            for action in self.A:
+                policy_in_state = self.policy[state[0]][state[1]]
+                next_state, reward = self.env.step(state, action)
+                next_v_value = self.v_values[next_state[0]][next_state[1]]
+                value += policy_in_state[action] * (
+                    reward + self.gamma * next_v_value
+                )
+            # Round to 2 decimal places
+            next_v_values[state[0]][state[1]] = round(value, 2)
+        # Update V values
+        self.v_values = next_v_values
 
     def policy_improvement(self) -> None:
-        pass
+        next_policy = self.policy
+        # Update policy for each state
+        for state in self.S:
+            if tuple(state) == GOAL:
+                continue
+            # Initialize temporary arrays
+            temp_vals = np.zeros(shape=(self.num_actions))
+            policy_update = np.zeros(shape=(self.num_actions))
+            # Compute action values
+            for idx, action in enumerate(self.A):
+                next_state, reward = self.env.step(state, action)
+                next_v_value = self.v_values[next_state[0]][next_state[1]]
+                temp_vals[idx] = reward + self.gamma * next_v_value
+            # Find best action(s) and update policy
+            max_indicies = np.argwhere(temp_vals == np.max(temp_vals)).ravel()
+            prob = 1.0 / len(max_indicies)
+            for index in max_indicies:
+                policy_update[index] = round(prob, 2)
+            next_policy[state[0]][state[1]] = policy_update
+        # Update policy
+        self.policy = next_policy
 
 
 def main() -> None:

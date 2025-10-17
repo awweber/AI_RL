@@ -30,7 +30,7 @@ class GraphicDisplay(tk.Tk):
     def __init__(self, agent: Any) -> None:
         super().__init__()
         self.title("Policy Iteration")
-        self.geometry(f"{HEIGHT * UNIT}x{HEIGHT * UNIT + 50}")
+        self.geometry(f"{HEIGHT * UNIT}x{HEIGHT * UNIT + 90}")
         self.texts: list[Any] = []
         self.arrows: list[Any] = []
         self.env = Env()
@@ -115,6 +115,49 @@ class GraphicDisplay(tk.Tk):
         canvas.pack()
 
         return canvas
+    def randomize_grid(self):
+        import random
+        # Neue zufällige Koordinaten für Goal und Dead-States
+        positions = [(x, y) for x in range(HEIGHT) for y in range(WIDTH)]
+        new_goal = random.choice(positions)
+        positions.remove(new_goal)
+        new_dead1 = random.choice(positions)
+        positions.remove(new_dead1)
+        new_dead2 = random.choice(positions)
+
+        # Update globale Variablen
+        global GOAL, DEAD1, DEAD2
+        GOAL = new_goal
+        DEAD1 = new_dead1
+        DEAD2 = new_dead2
+
+        # Rewards zurücksetzen
+        self.env.reward = [[0] * WIDTH for _ in range(HEIGHT)]
+        self.env.reward[GOAL[0]][GOAL[1]] = 1
+        self.env.reward[DEAD1[0]][DEAD1[1]] = -1
+        self.env.reward[DEAD2[0]][DEAD2[1]] = -1
+
+        # Policy zurücksetzen
+        self.agent.v_values = [[0.0] * WIDTH for _ in range(HEIGHT)]
+        self.agent.policy = [
+            [[0.25, 0.25, 0.25, 0.25]] * WIDTH for _ in range(HEIGHT)
+        ]
+        self.agent.policy[GOAL[0]][GOAL[1]] = []
+
+        # Canvas neu zeichnen
+        for i in self.texts:
+            self.canvas.delete(i)
+        for i in self.arrows:
+            self.canvas.delete(i)
+        self.texts.clear()
+        self.arrows.clear()
+        # Rewards anzeigen
+        self.text_reward(GOAL[0], GOAL[1], "R : 1.0")
+        self.text_reward(DEAD1[0], DEAD1[1], "R : -1.0")
+        self.text_reward(DEAD2[0], DEAD2[1], "R : -1.0")
+        # Ball auf Startposition (0,0) setzen
+        x, y = self.canvas.coords(self.rectangle)
+        self.canvas.move(self.rectangle, UNIT / 2 - x, UNIT / 2 - y)
 
     def load_images(self) -> tuple:
         up = PhotoImage(Image.open(PATH + "/img/up.png").resize((13, 13)))
@@ -138,14 +181,16 @@ class GraphicDisplay(tk.Tk):
             self.improvement_count = 0
             for i in self.texts:
                 self.canvas.delete(i)
-
             for i in self.arrows:
                 self.canvas.delete(i)
+            self.texts.clear()
+            self.arrows.clear()
             self.agent.v_values = [[0.0] * WIDTH for _ in range(HEIGHT)]
             self.agent.policy = [
                 [[0.25, 0.25, 0.25, 0.25]] * WIDTH for _ in range(HEIGHT)
             ]
             self.agent.policy[2][2] = []
+            # Ball auf Startposition (0,0) setzen
             x, y = self.canvas.coords(self.rectangle)
             self.canvas.move(self.rectangle, UNIT / 2 - x, UNIT / 2 - y)
 
@@ -219,18 +264,18 @@ class GraphicDisplay(tk.Tk):
     def move_by_policy(self) -> None:
         if self.improvement_count != 0 and self.is_moving != 1:
             self.is_moving = 1
-
             x, y = self.canvas.coords(self.rectangle)
             self.canvas.move(self.rectangle, UNIT / 2 - x, UNIT / 2 - y)
+            self._move_step()
 
-            x, y = self.find_rectangle()
-            while len(self.agent.policy[x][y]) != 0:
-                self.after(
-                    100,
-                    self.rectangle_move(self.agent.get_action([x, y])),  # type: ignore
-                )
-                x, y = self.find_rectangle()
+    def _move_step(self):
+        x, y = self.find_rectangle()
+        # Stoppe, wenn Goal erreicht
+        if (x, y) == GOAL or len(self.agent.policy[x][y]) == 0:
             self.is_moving = 0
+            return
+        self.rectangle_move(self.agent.get_action([x, y]))
+        self.after(100, self._move_step)
 
     def draw_one_arrow(self, col: Any, row: Any, policy: Any) -> None:
         if col == 2 and row == 2:
