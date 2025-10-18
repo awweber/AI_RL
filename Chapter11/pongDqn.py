@@ -1,21 +1,12 @@
 import numpy as np
-from keras.layers import Activation
-from keras.layers import Conv2D
-from keras.layers import Dense
-from keras.layers import Flatten
-from keras.layers import Input
-from keras.losses import Huber
+from keras.layers import Activation, Conv2D, Dense, Flatten, Input
+from keras.losses import Huber # Huber loss is less sensitive to outliers (more robust than MSE and MAE)
 from keras.models import Model
-from keras.optimizers import RMSprop
+from keras.optimizers import RMSprop # RMSprop is a good optimizer for DQN
 
 
 class DQN(Model):
-    def __init__(
-        self,
-        img_shape: tuple,
-        num_actions: int,
-        learning_rate: float,
-    ) -> None:
+    def __init__(self, img_shape: tuple, num_actions: int, learning_rate: float) -> None:
         super().__init__()
         self.img_shape = img_shape
         self.num_actions = num_actions
@@ -59,5 +50,7 @@ class DQN(Model):
 
 
 if __name__ == "__main__":
+    # Example: Pong DQN with input shape (84, 84, 4) and 2 actions (FIRE, NOOP)
+    # Create the DQN agent for Pong environment (84x84 grayscale images with 4-frame stack)
     dqn = DQN(img_shape=(84, 84, 4), num_actions=2, learning_rate=0.001)
     dqn.internal_model.summary()

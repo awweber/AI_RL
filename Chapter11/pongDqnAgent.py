@@ -4,16 +4,15 @@ import random
 from typing import Any
 
 import numpy as np
-import tensorflow as tf  # noqa: F401
 
 from pongDqn import DQN
 from pongDqnWrappers import make_env
 
 
-PROJECT_PATH = os.path.abspath("C:/Users/Jan/OneDrive/_Coding/UdemyAI")
+PROJECT_PATH = os.path.abspath("/Users/alex/Code/udemy/AI_RL")
 MODELS_PATH = os.path.join(PROJECT_PATH, "models")
-MODEL_PATH = os.path.join(MODELS_PATH, "dqn_pong.h5")
-TARGET_MODEL_PATH = os.path.join(MODELS_PATH, "target_dqn_pong.h5")
+MODEL_PATH = os.path.join(MODELS_PATH, "dqn_pong.weights.h5")
+TARGET_MODEL_PATH = os.path.join(MODELS_PATH, "target_dqn_pong.weights.h5")
 
 
 class Agent:
@@ -64,7 +63,7 @@ class Agent:
             while True:
                 frame_it += 1
                 action = self.get_action(state)
-                next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, done, _, _ = self.env.step(action)
                 self.epsilon_anneal()
                 self.remember(state, action, reward, next_state, done)
                 self.replay()
