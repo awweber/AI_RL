@@ -3,7 +3,7 @@ import os
 import random
 from typing import Any
 
-import gym
+import gymnasium as gym
 import matplotlib.pyplot as plt
 import numpy as np
 from keras.utils import to_categorical
@@ -12,10 +12,10 @@ from frozenLakeDqn import DQN
 from plotting import plotting_q_values
 
 
-PROJECT_PATH = os.path.abspath("C:/Users/Jan/OneDrive/_Coding/UdemyAI")
+PROJECT_PATH = os.path.abspath("/Users/alex/Code/udemy/AI_RL")
 MODELS_PATH = os.path.join(PROJECT_PATH, "models")
-MODEL_PATH = os.path.join(MODELS_PATH, "dqn_frozen_lake.h5")
-TARGET_MODEL_PATH = os.path.join(MODELS_PATH, "target_dqn_frozen_lake.h5")
+MODEL_PATH = os.path.join(MODELS_PATH, "dqn_frozen_lake.weights.h5")
+TARGET_MODEL_PATH = os.path.join(MODELS_PATH, "target_dqn_frozen_lake.weights.h5")
 
 
 class Agent:
@@ -26,14 +26,16 @@ class Agent:
         self.actions = self.env.action_space.n
         # DQN Agent Variables
         self.replay_buffer_size = 50_000
-        self.train_start = 1_000
+        # Start training earlier for this small environment
+        self.train_start = 200
         self.memory: collections.deque = collections.deque(
             maxlen=self.replay_buffer_size,
         )
         self.gamma = 0.995
         self.epsilon = 1.0
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.999
+        # Decay epsilon per episode (not per step) so exploration persists within episodes
+        self.epsilon_decay = 0.995
         # DQN Network Variables
         self.state_shape = self.observations
         self.learning_rate = 1e-3
@@ -45,11 +47,16 @@ class Agent:
         )
         self.target_dqn.update_model(self.dqn)
         self.batch_size = 32
+        # Training bookkeeping
+        self.step_count = 0
+        # Update target network every N training steps
+        self.target_update_freq = 200
 
     def get_action(self, state: np.ndarray) -> Any:
         if np.random.rand() <= self.epsilon:
             return np.random.randint(self.actions)
-        return np.argmax(self.dqn(state))
+        q_vals = self.dqn(state)
+        return int(np.argmax(q_vals[0]))
 
     def train(self, num_episodes: int) -> None:
         last_rewards: collections.deque = collections.deque(
@@ -60,13 +67,13 @@ class Agent:
 
         for episode in range(1, num_episodes + 1):
             total_reward = 0.0
-            state = self.env.reset()
+            state, _ = self.env.reset()
             state = to_categorical(state, num_classes=self.observations)
             state = np.reshape(state, newshape=(1, -1)).astype(np.float32)
 
             while True:
                 action = self.get_action(state)
-                next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, done, _, _ = self.env.step(action)
                 next_state = to_categorical(
                     next_state,
                     num_classes=self.observations,
@@ -99,6 +106,10 @@ class Agent:
                             return
                     break
 
+            # Decay epsilon once per episode
+            if self.epsilon > self.epsilon_min:
+                self.epsilon *= self.epsilon_decay
+
     def remember(
         self,
         state: Any,
@@ -108,11 +119,14 @@ class Agent:
         done: bool,
     ) -> None:
         self.memory.append((state, action, reward, next_state, done))
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+        # Epsilon decay moved to end of episode to avoid decaying every step
+        # which can prematurely reduce exploration.
 
     def replay(self) -> None:
         if len(self.memory) < self.train_start:
+            return
+
+        if len(self.memory) < self.batch_size:
             return
 
         minibatch = random.sample(self.memory, self.batch_size)
@@ -136,6 +150,11 @@ class Agent:
 
         self.dqn.fit(states, q_values)  # type: ignore
 
+        # Bookkeeping: update step counter and periodically update target
+        self.step_count += 1
+        if self.step_count % self.target_update_freq == 0:
+            self.target_dqn.update_model(self.dqn)
+
     def play(self, num_episodes: int, render: bool = True) -> None:
         self.dqn.load_model(MODEL_PATH)
         self.target_dqn.load_model(TARGET_MODEL_PATH)
@@ -151,7 +170,7 @@ class Agent:
         values = np.squeeze(values)
 
         for episode in range(num_episodes):
-            state = self.env.reset()
+            state, _ = self.env.reset()
             total_reward = 0.0
 
             while True:
@@ -160,7 +179,7 @@ class Agent:
                     np.float32,
                 )
                 action = self.get_action(state)
-                state, reward, done, _ = self.env.step(action)
+                state, reward, done, _, _ = self.env.step(action)
                 state_ = state
                 total_reward += reward
 
@@ -172,8 +191,8 @@ class Agent:
 
 
 if __name__ == "__main__":
-    env = gym.make("FrozenLake-v0")
+    env = gym.make("FrozenLake-v1", is_slippery=False)
     agent = Agent(env)
-    agent.train(num_episodes=600)
+    agent.train(num_episodes=250)
     input("Play?")
-    agent.play(num_episodes=3, render=True)
+    agent.play(num_episodes=5, render=True)

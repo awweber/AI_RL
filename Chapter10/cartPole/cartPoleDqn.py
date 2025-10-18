@@ -1,4 +1,6 @@
 import numpy as np
+from typing import Tuple, Union
+
 from keras.layers import Activation
 from keras.layers import Dense
 from keras.layers import Input
@@ -7,19 +9,21 @@ from keras.optimizers import Adam
 
 
 class DQN(Model):
-    def __init__(
-        self,
-        state_shape: int,
-        num_actions: int,
-        learning_rate: float,
-    ) -> None:
-        super().__init__()
-        self.state_shape = state_shape
+    # Konstruktor der DQN-Klasse
+    def __init__(self, state_shape: Union[int, Tuple[int, ...]], num_actions: int, learning_rate: float) -> None:
+        super().__init__() # Aufruf des Konstruktors der Basisklasse (Model)
+        # Normalize state_shape to a tuple acceptable by Keras Input layers
+        if isinstance(state_shape, int):
+            self.state_shape = (state_shape,)
+        else:
+            self.state_shape = tuple(state_shape)
         self.num_actions = num_actions
         self.learning_rate = learning_rate
-        self.internal_model = self.build_model()
+        self.internal_model = self.build_model()  # Hilfsfunktion zum Erstellen des Modells im Konstruktor
 
+    # Hilfsfunktion zum Erstellen des Modells im Konstruktor
     def build_model(self) -> Model:
+        # Definieren des neuronalen Netzwerks (festgelegte Architektur)
         input_state = Input(shape=self.state_shape)
         x = Dense(units=24)(input_state)
         x = Activation("relu")(x)
@@ -33,18 +37,23 @@ class DQN(Model):
         )
         return model
 
-    def call(self, inputs: np.ndarray):
-        return self.internal_model(inputs).numpy()
+    # Vorwärtsdurchlauf der DQN-Klasse (schneller als predict-Methode)
+    def call(self, inputs: np.ndarray) -> np.ndarray:
+        return self.internal_model(inputs).numpy() # Gibt NumPy-Array zurück(statt Tensor)
 
+    # Trainieren des Modells mit gegebenen Zuständen und Q-Werten
     def fit(self, states: np.ndarray, q_values: np.ndarray) -> None:
         self.internal_model.fit(x=states, y=q_values, verbose=0)
 
+    # Aktualisieren des Modells mit den Gewichten eines anderen Modells
     def update_model(self, other_model: Model) -> None:
         self.internal_model.set_weights(other_model.get_weights())
 
+    # Laden der Modellgewichte aus einer Datei
     def load_model(self, path: str) -> None:
         self.internal_model.load_weights(path)
 
+    # Speichern der Modellgewichte in einer Datei
     def save_model(self, path: str) -> None:
         self.internal_model.save_weights(path)
 

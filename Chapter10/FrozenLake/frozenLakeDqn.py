@@ -7,12 +7,7 @@ from keras.optimizers import Adam
 
 
 class DQN(Model):  # type: ignore
-    def __init__(
-        self,
-        state_shape: int,
-        num_actions: int,
-        learning_rate: float,
-    ) -> None:
+    def __init__(self, state_shape: int, num_actions: int, learning_rate: float) -> None:
         super().__init__()
         self.state_shape = state_shape
         self.num_actions = num_actions
@@ -20,7 +15,9 @@ class DQN(Model):  # type: ignore
         self.internal_model = self.build_model()
 
     def build_model(self) -> Model:
-        input_state = Input(shape=self.state_shape)
+        # FrozenLake states are provided as one-hot vectors of length `state_shape`.
+        # Use a 1D input shape (state_shape,)
+        input_state = Input(shape=(self.state_shape,))
         x = Dense(units=12)(input_state)
         x = Activation("relu")(x)
         x = Dense(units=24)(x)
@@ -34,6 +31,8 @@ class DQN(Model):  # type: ignore
         return model
 
     def call(self, inputs: np.ndarray) -> np.ndarray:
+        # Keras Model.call should return tensor-like outputs. The agent code
+        # expects numpy arrays, so we convert to numpy here.
         return self.internal_model(inputs).numpy()
 
     def fit(self, states: np.ndarray, q_values: np.ndarray) -> None:
@@ -50,5 +49,6 @@ class DQN(Model):  # type: ignore
 
 
 if __name__ == "__main__":
-    dqn = DQN(state_shape=4, num_actions=2, learning_rate=0.001)
+    # Example: FrozenLake-v1 (4x4) has 16 discrete states and 4 actions
+    dqn = DQN(state_shape=16, num_actions=4, learning_rate=0.001)
     dqn.internal_model.summary()
