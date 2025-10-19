@@ -2,23 +2,24 @@ import collections
 import os
 from typing import Any
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 from cartpoleA2CNN import Actor
 from cartpoleA2CNN import Critic
 
 
-PROJECT_PATH = os.path.abspath("C:/Users/Jan/OneDrive/_Coding/UdemyAI")
+PROJECT_PATH = os.path.abspath("/Users/alex/Code/udemy/AI_RL")
 MODELS_PATH = os.path.join(PROJECT_PATH, "models")
-ACTOR_PATH = os.path.join(MODELS_PATH, "actor_cartpole.h5")
-CRITIC_PATH = os.path.join(MODELS_PATH, "critic_cartpole.h5")
+ACTOR_PATH = os.path.join(MODELS_PATH, "actor_cartpole.weights.h5")
+CRITIC_PATH = os.path.join(MODELS_PATH, "critic_cartpole.weights.h5")
 
 
 class Agent:
     def __init__(self, env: gym.Env) -> None:
         self.env = env
-        self.num_observations = self.env.observation_space.shape
+        # Use integer number of observations (e.g. 4 for CartPole)
+        self.num_observations = int(np.prod(self.env.observation_space.shape))
         self.num_actions = self.env.action_space.n
         self.num_values = 1
         self.gamma = 0.95
@@ -68,12 +69,13 @@ class Agent:
 
         for episode in range(1, num_episodes + 1):
             total_reward = 0.0
-            state = self.env.reset()
+            state, _ = self.env.reset()
             state = np.reshape(state, newshape=(1, -1)).astype(np.float32)
 
             while True:
                 action = self.get_action(state)
-                next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, terminated, truncated, _ = self.env.step(action)
+                done = bool(terminated or truncated)
                 next_state = np.reshape(next_state, newshape=(1, -1)).astype(
                     np.float32,
                 )
@@ -108,14 +110,15 @@ class Agent:
 
         for episode in range(1, num_episodes + 1):
             total_reward = 0.0
-            state = self.env.reset()
+            state, _ = self.env.reset()
             state = np.reshape(state, newshape=(1, -1)).astype(np.float32)
 
             while True:
                 if render:
                     self.env.render()
                 action = self.get_action(state)
-                next_state, reward, done, _ = self.env.step(action)
+                next_state, reward, terminated, truncated, _ = self.env.step(action)
+                done = bool(terminated or truncated)
                 next_state = np.reshape(next_state, newshape=(1, -1)).astype(
                     np.float32,
                 )
@@ -130,6 +133,6 @@ class Agent:
 if __name__ == "__main__":
     env = gym.make("CartPole-v1")
     agent = Agent(env)
-    agent.train(num_episodes=1_000)
+    agent.train(num_episodes=200)
     input("Play?")
     agent.play(num_episodes=10, render=True)

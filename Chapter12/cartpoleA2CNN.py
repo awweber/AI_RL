@@ -1,7 +1,5 @@
 import numpy as np
-from keras.layers import Activation
-from keras.layers import Dense
-from keras.layers import Input
+from keras.layers import Activation, Dense, Input
 from keras.models import Model
 from keras.optimizers import Adam
 
@@ -20,7 +18,7 @@ class Actor(Model):
         self.internal_model = self.build_model()
 
     def build_model(self) -> Model:
-        actor_in = Input(shape=self.num_observations)
+        actor_in = Input(shape=(self.num_observations,))
         x = Dense(units=24)(actor_in)
         x = Activation("relu")(x)
         x = Dense(self.num_actions)(x)
@@ -62,7 +60,7 @@ class Critic(Model):
         self.internal_model = self.build_model()
 
     def build_model(self) -> Model:
-        critic_in = Input(shape=self.num_observations)
+        critic_in = Input(shape=(self.num_observations,))
         x = Dense(units=24)(critic_in)
         x = Activation("relu")(x)
         critic_out = Dense(self.num_values)(x)
