@@ -8,7 +8,8 @@ numpy==1.26.4
 matplotlib
 pandas
 opencv-python
-gym==0.17.*
+gymnasium==1.2.*
+ale-py==0.12.*
 pygame
 
 tensorflow==2.14.*
